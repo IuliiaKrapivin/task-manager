@@ -5,11 +5,11 @@ This app allows users to manage projects and tasks with due dates, priority, and
 
 **The project was created using the following technologies:**
 
-*Python as a core programming language
-*Flask web framework for backend development
-*Flask-SQLAlchemy library for database interaction
-*React for frontend design
-*SQLite for data storing
+***Python*** as a core programming language,
+***Flask*** web framework for backend development,
+***Flask-SQLAlchemy*** library for database interaction,
+***React*** for frontend design,
+***SQLite*** for data storing.
 
 ## 🚀 Getting Started
 
