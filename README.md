@@ -3,18 +3,13 @@
 A full-stack task manager built with **Flask (Python)** and **React (JavaScript)**.  
 This app allows users to manage projects and tasks with due dates, priority, and statuses.
 
----
+**The project was created using the following technologies:**
 
-## 📁 Project Structure
-task-manager/
-│
-├── app/                # Flask backend (API)
-├── client/             # React frontend
-├── run.py              # Entry point for Flask app
-├── requirements.txt    # Python dependencies
-├── .gitignore
-└── README.md           
----
+Python as a core programming language
+Flask web framework for backend development
+Flask-SQLAlchemy library for database interaction
+React for frontend design
+SQLite for data storing
 
 ## 🚀 Getting Started
 
@@ -29,8 +24,8 @@ npm install
 npm start
 
 Features
- • ✅ Create/view/delete Projects
- • ✅ Add/edit/delete Tasks under projects
+ • ✅ Create/view Projects (deleting is comming soon)
+ • ✅ Add/edit/delete Tasks in projects
  • ✅ Status + Priority tracking
  • 🛠 Login/registration coming soon…
 
