@@ -15,12 +15,12 @@ This app allows users to manage projects and tasks with due dates, priority, and
 
 ### Backend (Flask API)
 
-pip install -r requirements.txt
+pip install -r requirements.txt ->
 python run.py
 
 ### Frontend (React)
-cd client
-npm install
+cd client ->
+npm install ->
 npm start
 
 Features
