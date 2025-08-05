@@ -16,16 +16,26 @@ This app allows users to manage projects and tasks with due dates, priority, and
 ### Backend (Flask API)
 
 pip install -r requirements.txt ->
+source venv/bin/activate ->
 python run.py
 
 ### Frontend (React)
 cd client ->
 npm install ->
-npm start
+HOST=127.0.0.1 npm start
 
 Features
  • ✅ Create/view Projects (deleting is comming soon)
  • ✅ Add/edit/delete Tasks in projects
  • ✅ Status + Priority tracking
- • 🛠 Login/registration coming soon…
+ • ✅ User's personal account
+ 
+ New features are on their way:
+ • 🌀 tasks sorting and filtering
+ • 🌀 projects managing
+ • 🌀 cross users access for one project
+
+
+
+
 
