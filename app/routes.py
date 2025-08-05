@@ -1,8 +1,7 @@
 from flask import request, redirect, url_for, flash, Blueprint, jsonify
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user 
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User, Project, Task, db
-from flask_login import login_required
 from datetime import datetime
 
 main = Blueprint('main', __name__)
@@ -23,9 +22,9 @@ def api_register():
     existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
     if existing_user:
         return jsonify({'error': 'User already exists'}), 409
-
-    hashed_pw = generate_password_hash(password)
-    new_user = User(username=username, email=email, password=hashed_pw)
+    
+    new_user = User(username=username, email=email)
+    new_user.password = password
 
     db.session.add(new_user)
     db.session.commit()
@@ -37,52 +36,72 @@ def api_register():
 def api_login():
     data = request.get_json()
 
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'error': 'Missing username or password'}), 400
+    if not email or not password:
+        return jsonify({'error': 'Missing e-mail or password'}), 400
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=email).first()
 
-    if user and check_password_hash(user.password, password):
-        return jsonify({'message': 'Login successful'}), 200
+    if user and user.check_password(password):
+        login_user(user)
+        return jsonify({'message': 'Login successful', 'username': user.username}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
 # Route for a user to log out
-@main.route('/logout')
+@main.route('/api/logout', methods=['POST'] )
 @login_required
 def logout():
     logout_user()
-    flash('Logged out successfully.')
-    return redirect(url_for('main.login'))
+    return jsonify({'message': 'User logged out successfully'}), 200
+
+@main.route('/api/user')
+@login_required
+def get_user():
+    return jsonify({'username': current_user.username, 'email': current_user.email})
+
 
 # Route get and create projects 
 @main.route('/api/projects', methods=['GET', 'POST'])
+@login_required
 def api_projects():
     if request.method == 'POST':
         data = request.get_json()
         name = data.get('name')
-        user_id = data.get('user_id')  # Later: auto-grab from session
 
-        if not name or not user_id:
+        if not name:
             return jsonify({'error': 'Missing data'}), 400
 
-        new_project = Project(name=name, user_id=user_id)
+        new_project = Project(name=name, user_id=current_user.id)
         db.session.add(new_project)
         db.session.commit()
 
-        return jsonify({'message': 'Project created'}), 201
+        return jsonify({
+            'message': 'Project created',
+            'project': {
+                'id': new_project.id,
+                'name': new_project.name,
+                'user_id': new_project.user_id
+            }
+        }), 201
 
     # GET request
-    projects = Project.query.all()
+    projects = Project.query.filter_by(user_id=current_user.id).all()
     result = [{'id': p.id, 'name': p.name, 'user_id': p.user_id} for p in projects]
     return jsonify(result) 
 
 # Route to get and create tasks for a specific project
 @main.route('/api/projects/<int:project_id>/tasks', methods=['GET', 'POST'])
+@login_required
 def project_tasks(project_id):
+
+    project = Project.query.filter_by(id=project_id, user_id=current_user.id).first()
+    if not project:
+        return jsonify({'error': 'Project not found or access denied'}), 404
+        
+
     if request.method == 'POST':
         data = request.get_json()
 
@@ -138,10 +157,15 @@ def project_tasks(project_id):
 
 # Route to delete a specific task
 @main.route('/api/tasks/<int:task_id>', methods=['DELETE'])
+@login_required
 def delete_task(task_id):
     task = Task.query.get(task_id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
+
+    project = Project.query.get(task.project_id)
+    if not project or project.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403    
 
     db.session.delete(task)
     db.session.commit()
@@ -149,8 +173,14 @@ def delete_task(task_id):
 
 # Route to update a specific task with new data 
 @main.route('/api/tasks/<int:task_id>', methods=['PUT'])
+@login_required
 def update_task(task_id):
     task = Task.query.get_or_404(task_id)
+
+    project = Project.query.get(task.project_id)
+    if not project or project.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
     data = request.get_json()
 
     task.title = data.get('title', task.title)
@@ -176,3 +206,7 @@ def update_task(task_id):
         'due_date': task.due_date.isoformat() if task.due_date else None,
         'priority': task.priority
     }})
+
+@main.route("/cors-test")
+def cors_test():
+    return {"message": "CORS is working!"}

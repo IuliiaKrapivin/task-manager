@@ -19,9 +19,12 @@ export default function TaskList({ projectId }) {
     due_date: '',
     priority: ''
   });
+  const API_BASE = 'http://127.0.0.1:5000';
 
-  useEffect(() => {
-    fetch(`http://localhost:5000/api/projects/${projectId}/tasks`)
+
+
+  useEffect(() => { 
+    fetch(`${API_BASE}/api/projects/${projectId}/tasks`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setTasks(data));
   }, [projectId]);
@@ -33,8 +36,9 @@ export default function TaskList({ projectId }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
+    const res = await fetch(`${API_BASE}/api/projects/${projectId}/tasks`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     });
@@ -55,9 +59,10 @@ export default function TaskList({ projectId }) {
     }
   };
  
-  const handleDelete = async (taskId) => {
-    const res = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-      method: 'DELETE'
+  const handleDelete = async (taskId) => { 
+    const res = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+      method: 'DELETE',
+      credentials: 'include'
     });
 
     if (res.ok) {
@@ -86,14 +91,15 @@ export default function TaskList({ projectId }) {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`http://localhost:5000/api/tasks/${editingTask}`, {
+    const res = await fetch(`${API_BASE}/api/tasks/${editingTask}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editData)
     });
 
     if (res.ok) {
-      const updatedTasks = tasks.map(t =>
+      const updatedTasks = (tasks || []).map(t =>
         t.id === editingTask ? { ...t, ...editData } : t
       );
       setTasks(updatedTasks);
@@ -151,7 +157,7 @@ export default function TaskList({ projectId }) {
       )}
   
       <ul>
-        {tasks.map((t, idx) => (
+        {(tasks || []).map((t, idx) => (
           <li key={idx} className='task-card'>
             <strong>{t.title}</strong> — {t.status} — {t.priority} — {t.due_date}
             <br />
